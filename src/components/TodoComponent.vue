@@ -33,7 +33,6 @@ const deleteTodo = (id: number) => {
 
 <template>
   <section class="flex w-1/2 flex-col gap-10">
-    <h1>Todos list</h1>
     <ul class="800 flex list-none justify-between gap-5 text-lg text-black">
       <li class="flex flex-col gap-2 bg-gray-300 p-2">
         <span>Pending</span>
@@ -50,11 +49,11 @@ const deleteTodo = (id: number) => {
     </ul>
 
     <div class="flex flex-col gap-4">
-      <div class="px flex items-center justify-between pr-2">
+      <div class="px flex items-center justify-between gap-4 pr-2">
         <input
           v-model="input"
           autofocus
-          class="rounded-lg border border-gray-300 bg-gray-500 p-2"
+          class="w-full rounded-lg border border-gray-300 bg-gray-500 p-2"
           @keyup.enter="addTodo"
         />
         <button
