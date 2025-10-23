@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
+import ModalComponent from '@plugins/modals/ModalComponent.vue'
 
 interface TodoModel {
   text: string
@@ -32,6 +33,7 @@ const deleteTodo = (id: number) => {
 </script>
 
 <template>
+  <ModalComponent />
   <section class="flex w-1/2 flex-col gap-10">
     <ul class="800 flex list-none justify-between gap-5 text-lg text-black">
       <li class="flex flex-col gap-2 bg-gray-300 p-2">
