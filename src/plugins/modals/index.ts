@@ -1,22 +1,8 @@
 import { type App, reactive } from 'vue'
 import Modal from './ModalComponent.vue'
+import { type IModal, type ModalApi, modalKey } from '@plugins/modals/model.ts'
 
-type ModalAction = () => void
-
-interface CurrentModal {
-  name: string
-  resolve: ModalAction | null
-  reject: ModalAction | null
-}
-
-interface ModalApi {
-  active: () => void
-  show: (name: string) => Promise<void>
-  accept: ModalAction
-  cancel: ModalAction
-}
-
-const current = reactive<CurrentModal>({
+const current = reactive<IModal>({
   name: '',
   reject: null,
   resolve: null,
@@ -44,7 +30,7 @@ const api: ModalApi = {
 const plugin = {
   install(app: App) {
     app.component('ModalComponent', Modal)
-    app.provide('modals', api)
+    app.provide(modalKey, api)
   },
 }
 
