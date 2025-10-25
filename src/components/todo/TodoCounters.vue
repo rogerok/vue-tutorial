@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 interface Props {
-  pending: number
+  notStarted: number
   completed: number
   inProgress: number
 }
@@ -11,8 +11,8 @@ const props = defineProps<Props>()
 <template>
   <ul class="800 flex list-none justify-between gap-5 text-lg text-black">
     <li class="flex flex-col gap-2 bg-gray-300 p-2">
-      <span>Pending</span>
-      <span>{{ props.pending }}</span>
+      <span>Not started</span>
+      <span>{{ props.notStarted }}</span>
     </li>
     <li class="flex flex-col gap-2 bg-green-300 p-2">
       <span>In progress</span>

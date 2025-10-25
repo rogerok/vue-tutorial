@@ -1,93 +1,99 @@
 <script lang="ts" setup>
-import { computed, inject, ref } from 'vue'
+import { computed, inject, reactive, ref } from 'vue'
 import ModalComponent from '@plugins/modals/ModalComponent.vue'
 import { modalKey } from '@plugins/modals/model.ts'
 import TodoCounters from '@components/todo/TodoCounters.vue'
 import type { TodoModel } from '@components/todo/model.ts'
 import TodosList from '@components/todo/TodosList.vue'
-import { getDefaultTodo } from '@components/todo/service.ts'
+import { getDefaultTodo, makeCopy, toggleStatus } from '@components/todo/service.ts'
 import TodoForm from '@components/todo/TodoForm.vue'
 
-const modalName = 'todo'
-
 const item = ref<TodoModel>(getDefaultTodo())
+const items = reactive<TodoModel[]>([])
 
-const todos = ref<TodoModel[]>([])
-
-const completed = computed(() => todos.value.filter((item) => item.completed))
-const pending = computed(() => todos.value.filter((item) => !item.completed))
-
-const addTodo = () => {
-  if (input.value) {
-    todos.value.push({
-      text: input.value,
-      id: new Date().valueOf(),
-      completed: false,
-    })
-    clearInput()
-  }
-}
-
-const clearInput = () => (item.value = getDefaultTodo())
+const counters = computed(() =>
+  items.reduce(
+    (acc, i) => {
+      switch (i.status) {
+        case 'completed':
+          acc.completed = acc.completed + 1
+          break
+        case 'inProgress':
+          acc.inProgress = acc.inProgress + 1
+          break
+        case 'notStarted':
+          acc.notStarted = acc.notStarted + 1
+          break
+      }
+      return acc
+    },
+    {
+      notStarted: 0,
+      completed: 0,
+      inProgress: 0,
+    }
+  )
+)
 
 const deleteTodo = (id: number) => {
-  todos.value = todos.value.filter((todo) => todo.id !== id)
+  const idx = items.findIndex((todo) => todo.id !== id)
+  items.splice(idx, 1)
 }
 
 const modals = inject(modalKey)
+const modalName = 'todo'
 
-modals?.show(modalName).then(
-  () => {
-    addTodo()
-  },
-  () => {
-    clearInput()
+const handleModal = (isNew = true, todo: TodoModel = getDefaultTodo()) => {
+  if (isNew) {
+    item.value = getDefaultTodo()
+  } else {
+    item.value = makeCopy(todo)
   }
-)
+  modals?.show(modalName).then(
+    () => {
+      if (isNew) {
+        items.push(item.value)
+      } else {
+        const idx = items.findIndex((t) => t.id === todo.id)
+        if (idx >= 0) {
+          items[idx] = item.value
+        }
+      }
+    },
+    () => {
+      item.value = getDefaultTodo()
+    }
+  )
+}
+
+const changeStatus = (todo: TodoModel) => {
+  todo.status = toggleStatus(todo.status)
+}
 </script>
 
 <template>
   <section class="flex w-1/2 flex-col gap-10">
     <TodoCounters
-      :completed="completed.length"
-      :in-progress="0"
-      :pending="pending.length"
+      :completed="counters.completed"
+      :in-progress="counters.inProgress"
+      :not-started="counters.notStarted"
     ></TodoCounters>
-    <div class="flex flex-col gap-4">
-      <ModalComponent :name="modalName">
-        <TodoForm></TodoForm>
-      </ModalComponent>
-      <button
-        class="hover: cursor-pointer self-end rounded-2xl bg-green-700 p-2 shadow-2xl hover:bg-green-900"
-        @click="addTodo"
-      >
-        + Add
-      </button>
-    </div>
 
-    <TodosList :todos="pending" @delete-todo="deleteTodo"></TodosList>
+    <ModalComponent :name="modalName">
+      <TodoForm :todo="item"></TodoForm>
+    </ModalComponent>
+    <button
+      class="hover: cursor-pointer self-end rounded-2xl bg-green-700 p-2 shadow-2xl hover:bg-green-900"
+      @click="handleModal(true)"
+    >
+      + Add
+    </button>
 
-    <div>
-      <h2 class="mb-3">Completed Todos {{ completed.length }}</h2>
-      <ul class="flex list-none flex-col gap-8">
-        <li v-for="todo in completed" :key="todo.id" class="border-b border-green-50">
-          <div class="flex justify-between">
-            <label class="flex items-center gap-2" for="{{todo.id}}">
-              <input v-model="todo.completed" type="checkbox" />
-              <span>
-                {{ todo.text }}
-              </span>
-            </label>
-
-            <button
-              class="hover: cursor-pointer rounded-full bg-red-300 p-1 shadow-2xl hover:bg-red-500"
-              @click="deleteTodo(todo.id)"
-            >
-              X
-            </button>
-          </div>
-        </li>
-      </ul>
-    </div>
+    <TodosList
+      :todos="items"
+      @delete:todo="deleteTodo"
+      @edit:todo="handleModal"
+      @toggle:status="changeStatus"
+    ></TodosList>
   </section>
 </template>
