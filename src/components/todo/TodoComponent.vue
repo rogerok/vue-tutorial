@@ -7,9 +7,16 @@ import type { TodoModel } from '@components/todo/model.ts'
 import TodosList from '@components/todo/TodosList.vue'
 import { getDefaultTodo, makeCopy, toggleStatus } from '@components/todo/service.ts'
 import TodoForm from '@components/todo/TodoForm.vue'
+import TodoFilter from '@components/todo/TodoFilter.vue'
 
 const item = ref<TodoModel>(getDefaultTodo())
 const items = reactive<TodoModel[]>([])
+
+const searchTerm = ref('')
+
+const filteredItems = computed(() =>
+  items.filter((t) => t.text.toLocaleLowerCase().includes(searchTerm.value.toLowerCase()))
+)
 
 const counters = computed(() =>
   items.reduce(
@@ -36,8 +43,10 @@ const counters = computed(() =>
 )
 
 const deleteTodo = (id: number) => {
-  const idx = items.findIndex((todo) => todo.id !== id)
-  items.splice(idx, 1)
+  const idx = items.findIndex((todo) => todo.id === id)
+  if (idx >= 0) {
+    items.splice(idx, 1)
+  }
 }
 
 const modals = inject(modalKey)
@@ -78,7 +87,7 @@ const changeStatus = (todo: TodoModel) => {
       :in-progress="counters.inProgress"
       :not-started="counters.notStarted"
     ></TodoCounters>
-
+    <TodoFilter v-model:search-term="searchTerm" />
     <ModalComponent :name="modalName">
       <TodoForm :todo="item"></TodoForm>
     </ModalComponent>
@@ -90,7 +99,7 @@ const changeStatus = (todo: TodoModel) => {
     </button>
 
     <TodosList
-      :todos="items"
+      :todos="filteredItems"
       @delete:todo="deleteTodo"
       @edit:todo="handleModal"
       @toggle:status="changeStatus"
