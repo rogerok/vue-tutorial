@@ -1,4 +1,5 @@
-<script setup lang="ts">
+
+<script lang="ts" setup>
 defineProps<{
   msg: string
 }>()
@@ -9,8 +10,8 @@ defineProps<{
     <h1 class="green">{{ msg }}</h1>
     <h3>
       You’ve successfully created a project with
-      <a href="https://vite.dev/" target="_blank" rel="noopener">Vite</a> +
-      <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue 3</a>. What's next?
+      <a href="https://vite.dev/" rel="noopener" target="_blank">Vite</a> +
+      <a href="https://vuejs.org/" rel="noopener" target="_blank">Vue 3</a>. What's next?
     </h3>
   </div>
 </template>
